@@ -1,4 +1,5 @@
 defmodule Issues.CLI do
+  import Issues.TableFormatter, only: [print_table_for_columns: 2]
   @default_count 4
   @moduledoc """
   Handle the command line parsing and the dispatch to
@@ -40,8 +41,12 @@ defmodule Issues.CLI do
     :help
   end
 
-  def process({user, project, _count}) do
+  def process({user, project, count}) do
     Issues.GithubIssues.fetch(user, project)
+    |> decode_response()
+    |> sort_into_descending_order()
+    |> last(count)
+    |> print_table_for_columns(["number", "created_at", "title"])
   end
 
   def process(:help) do
@@ -50,5 +55,23 @@ defmodule Issues.CLI do
     """)
 
     System.halt(0)
+  end
+
+  def decode_response({:ok, body}), do: body
+
+  def decode_response({:error, error}) do
+    IO.puts("Error fetching from Github: #{error["message"]}")
+    System.halt(2)
+  end
+
+  def sort_into_descending_order(issues) do
+    issues
+    |> Enum.sort(&(&1["created_at"] >= &2["created_at"]))
+  end
+
+  defp last(list, count) do
+    list
+    |> Enum.take(count)
+    |> Enum.reverse()
   end
 end
