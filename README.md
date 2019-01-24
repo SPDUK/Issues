@@ -2,6 +2,8 @@
 
 Gets github issues and turns them into a formatted table in the terminal.
 
+Requires erlang to run `./issues` file (all you need to fetch the issues) and erlang + elixir for the rest.
+
 To run `./issues <name> <user> <lines>`
 
 By default you get 4 if you just run `./issues <name> <user>`
